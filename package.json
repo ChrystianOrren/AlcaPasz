@@ -41,8 +41,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "expo-sqlite": "~15.0.6",
-    "undefined": "expo-sqlite/legacy"
+    "expo-sqlite": "~15.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

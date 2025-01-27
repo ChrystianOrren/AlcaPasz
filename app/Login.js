@@ -1,10 +1,14 @@
 import { Text, View, TouchableOpacity, TextInput, StyleSheet } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { checkLogin } from "./database";
+import { useState } from "react";
 
 export default function Login() {
+  const [ username, setUsername] = useState('')
+  const [ password, setPassword] = useState('')
+  const [ flag, setFlag ] = useState(null)
 
   const navigation = useNavigation();
-
 
   const switchPage = (page) => {
     if (page == "Register"){
@@ -15,8 +19,13 @@ export default function Login() {
     }
   }
 
-  const clickedSubmit = () => {
-    console.log("Submit")
+  const clickedSubmit = async () => {
+    const id = await checkLogin(username, password)
+    setFlag(id)
+
+    if (id > 0) {
+      navigation.navigate("Home")
+    }
   }
 
   return (
@@ -27,6 +36,7 @@ export default function Login() {
         <Text style={styles.inputHeader}>Username</Text>
         <TextInput
           style={styles.input}
+          onChangeText={setUsername}
         />
       </View>
 
@@ -34,6 +44,7 @@ export default function Login() {
         <Text style={styles.inputHeader}>Password</Text>
         <TextInput
           style={styles.input}
+          onChangeText={setPassword}
         />
       </View>
 

@@ -1,8 +1,12 @@
 import { Text, View, TouchableOpacity, TextInput, StyleSheet } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
+import { checkRegister } from "./database";
 
 export default function Register() {
+  const [ username, setUsername] = useState('')
+  const [ password1, setPassword1] = useState('')
+  const [ password2, setPassword2] = useState('')
 
   const navigation = useNavigation();
 
@@ -15,8 +19,14 @@ export default function Register() {
     }
   }
 
-  const clickedSubmit = () => {
-    console.log("Submit")
+  const clickedSubmit = async () => {
+    const check = await checkRegister(username)
+    console.log(check)
+
+    if (check == 1 && password1 == password2) {
+      // Add account, switch to login screen
+      console.log("adding account")
+    }
   }
 
   return (
@@ -27,6 +37,7 @@ export default function Register() {
         <Text style={styles.inputHeader}>Username</Text>
         <TextInput
           style={styles.input}
+          onChangeText={setUsername}
         />
       </View>
 
@@ -34,6 +45,15 @@ export default function Register() {
         <Text style={styles.inputHeader}>Password</Text>
         <TextInput
           style={styles.input}
+          onChangeText={setPassword1}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputHeader}>Confirm password</Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={setPassword2}
         />
       </View>
 
