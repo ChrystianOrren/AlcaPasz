@@ -1,32 +1,62 @@
 import { Text, View, TouchableOpacity, TextInput, StyleSheet } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { checkRegister } from "./database";
+import { insertUser } from "./database";
+import bcrypt from 'react-native-bcrypt';
+import 'react-native-get-random-values';
+
+bcrypt.setRandomFallback((n) => {
+  const randomValues = new Uint8Array(n);
+  crypto.getRandomValues(randomValues);
+  return Array.from(randomValues).map((val) => val % 256);
+});
 
 export default function Register() {
   const [ username, setUsername] = useState('')
   const [ password1, setPassword1] = useState('')
   const [ password2, setPassword2] = useState('')
+  const [ flag, setFlag ] = useState(0)
 
   const navigation = useNavigation();
 
+  // Switch to login page
   const switchPage = (page) => {
-    if (page == "Login"){
-      navigation.navigate(page)
+    navigation.navigate(page)
+  }
+
+  // Handles submit button being pressed
+  const clickedSubmit = async () => {
+    if (password1 == password2) {
+      try {
+        const hashedPassword = await encryptPass()
+        const inserting = await insertUser(username, hashedPassword)
+        console.log(inserting)
+        if (inserting == 0) {
+          setFlag(2) // Username already taken.
+        }
+        else {
+          setFlag(3) // Success
+        }
+        return
+      }
+      catch (error) {
+        console.log(error)
+      }
     }
-    else{
-      navigation.navigate(page)
+    else {
+      setFlag(1) // Passwords dont match
     }
   }
 
-  const clickedSubmit = async () => {
-    const check = await checkRegister(username)
-    console.log(check)
-
-    if (check == 1 && password1 == password2) {
-      // Add account, switch to login screen
-      console.log("adding account")
+  const encryptPass = async () => {
+    let hashedPassword
+    try {
+      const salt = bcrypt.genSaltSync(10); // Generate salt
+      hashedPassword = bcrypt.hashSync(password1, salt); // Hash password
+    } catch (error) {
+      console.error("Error hashing password:", error);
     }
+    return hashedPassword
   }
 
   return (

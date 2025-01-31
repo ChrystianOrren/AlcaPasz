@@ -2,30 +2,58 @@ import { Text, View, TouchableOpacity, TextInput, StyleSheet } from "react-nativ
 import { useNavigation } from '@react-navigation/native';
 import { checkLogin } from "./database";
 import { useState } from "react";
+import bcrypt from 'react-native-bcrypt';
+import 'react-native-get-random-values';
+
+// Math.random is not secure
+bcrypt.setRandomFallback((n) => {
+  const randomValues = new Uint8Array(n);
+  crypto.getRandomValues(randomValues);
+  return Array.from(randomValues).map((val) => val % 256);
+});
 
 export default function Login() {
   const [ username, setUsername] = useState('')
   const [ password, setPassword] = useState('')
-  const [ flag, setFlag ] = useState(null)
+  const [ flag, setFlag ] = useState(false) // Login fail flags
 
   const navigation = useNavigation();
 
+  // Navigate to different screens
   const switchPage = (page) => {
-    if (page == "Register"){
-      navigation.navigate(page)
+    navigation.navigate(page)
+  }
+
+  const test = async () => {
+    printUsers()
+    printPasswords()
+  }
+
+  // Handles submit button logic
+  const clickedSubmit = async () => {
+    // Check if user and pass match in database
+    const hashedPassword = await encryptPass()
+    const row = await checkLogin(username, hashedPassword)
+    const isPasswordCorrect = bcrypt.compareSync(password, row.password);
+    const id = row.id
+
+    if ( isPasswordCorrect ) { // Successful login, primary key returned.
+      navigation.navigate("Home", {id})
     }
-    else{
-      navigation.navigate(page)
+    else {
+      setFlag(true)
     }
   }
 
-  const clickedSubmit = async () => {
-    const id = await checkLogin(username, password)
-    setFlag(id)
-
-    if (id > 0) {
-      navigation.navigate("Home")
+  const encryptPass = async () => {
+    let hashedPassword
+    try {
+      const salt = bcrypt.genSaltSync(10); // Generate salt
+      hashedPassword = bcrypt.hashSync(password, salt); // Hash password
+    } catch (error) {
+      console.error("Error hashing password:", error);
     }
+    return hashedPassword
   }
 
   return (
