@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-native-fontawesome": "^0.3.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
-    "expo": "~52.0.27",
+    "expo": "~52.0.28",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.5",
     "expo-font": "~13.0.3",
@@ -29,9 +31,10 @@
     "expo-splash-screen": "~0.29.21",
     "expo-sqlite": "~15.1.0",
     "expo-status-bar": "~2.0.1",
-    "expo-symbols": "~0.2.1",
+    "expo-symbols": "~0.2.2",
     "expo-system-ui": "~4.0.7",
     "expo-web-browser": "~14.0.2",
+    "generate-password": "^1.7.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.6",
@@ -43,7 +46,8 @@
     "react-native-screens": "~4.4.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "expo-clipboard": "~7.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

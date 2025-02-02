@@ -12,7 +12,7 @@ export const initalizeDB = async () => {
         console.log("Creating table result:", createUsers);
 
         const createPasswords = await db.runAsync(
-            'CREATE TABLE IF NOT EXISTS passwords (id INTEGER PRIMARY KEY AUTOINCREMENT, uid INTEGER NOT NULL, password TEXT NOT NULL, FOREIGN KEY (uid) REFERENCES users(id));'
+            'CREATE TABLE IF NOT EXISTS passwords (id INTEGER PRIMARY KEY AUTOINCREMENT, uid INTEGER NOT NULL, password TEXT NOT NULL, title TEXT NOT NULL, FOREIGN KEY (uid) REFERENCES users(id));'
         );
         console.log("Creating table result:", createPasswords);
     }
@@ -85,7 +85,7 @@ export const printPasswords = async () => {
     try{
         const allRows = await db.getAllAsync('SELECT * FROM passwords');
         for (const row of allRows){
-          console.log([row.id, row.uid, row.password]);
+          console.log([row.id, row.uid, row.password, row.title]);
         }
     }
     catch (error) {
@@ -93,10 +93,10 @@ export const printPasswords = async () => {
     }
 }
 
-export const insertPassword = async (password, uid) => {
+export const insertPassword = async (password, uid, title) => {
     await initalizeDB()
     try {
-        const insertPassword = await db.runAsync('INSERT INTO passwords (uid, password) VALUES (?, ?)', uid, password)
+        const insertPassword = await db.runAsync('INSERT INTO passwords (uid, password, title) VALUES (?, ?, ?)', uid, password, title)
         console.log(insertPassword)
         return insertPassword
     }
@@ -143,3 +143,13 @@ export const checkLogin = async (username, password) => {
     }
     return 0 // No matches found.
 }
+
+export const deletePasswordsTable = async () => {
+    await initalizeDB();
+    try {
+        const result = await db.runAsync('DROP TABLE IF EXISTS passwords;');
+        console.log("Passwords table deleted:", result);
+    } catch (error) {
+        console.error("Error deleting passwords table:", error);
+    }
+};
