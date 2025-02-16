@@ -1,11 +1,12 @@
 import { Text, View, TouchableOpacity, StyleSheet, ScrollView, StatusBar, Modal, Checkbox } from "react-native";
-import { getUsersPasswords, insertPassword } from "./database";
+import { getUsersPasswords, insertPassword, printPasswords } from "./database";
 import { useRoute } from "@react-navigation/native";
 import { useEffect, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
+import Aes from 'react-native-aes-crypto'
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faEye, faCopy, faAdd, faClose } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCopy, faAdd, faClose, faFish } from '@fortawesome/free-solid-svg-icons';
 import { TextInput } from "react-native-gesture-handler";
 
 const charBank = {
@@ -68,7 +69,12 @@ export default function Home() {
   }
 
   const createNewPassword = async () => {
-    const createdPass = await insertPassword(newPass, id, newTitle)
+    if (newTitle != "" && newPass != "") {
+      const createdPass = await insertPassword(newPass, id, newTitle)
+    }
+    else{
+      console.log("Fields must be filled out")
+    }
   }
 
   const deletePassword = async (passId) => {
@@ -121,8 +127,51 @@ export default function Home() {
     });
   };
 
+  const handleGenerateButton = () => {
+    const generatedPass = generatePassword()
+    setNewPass(generatedPass)
+  }
+
+  const generateKey = (passWORD, salt, cost, length) => Aes.pbkdf2(passWORD, salt, cost, length, 'sha256')
+
+  const encryptData = (text, key) => {
+      return Aes.randomKey(16).then(iv => {
+          return Aes.encrypt(text, key, iv, 'aes-256-cbc').then(cipher => ({
+              cipher,
+              iv,
+          }))
+      })
+  }
+  
+  const decryptData = (encryptedData, key) => Aes.decrypt(encryptedData.cipher, key, encryptedData.iv, 'aes-256-cbc')  
+
   const test = async () => {
-    console.log(shows)
+    try {
+      generateKey('Arnold', 'salt', 5000, 256).then(key => {
+          console.log('Key:', key)
+          encryptData('These violent delights have violent ends', key)
+              .then(({ cipher, iv }) => {
+                  console.log('Encrypted:', cipher)
+  
+                  decryptData({ cipher, iv }, key)
+                      .then(text => {
+                          console.log('Decrypted:', text)
+                      })
+                      .catch(error => {
+                          console.log(error)
+                      })
+  
+                  Aes.hmac256(cipher, key).then(hash => {
+                      console.log('HMAC', hash)
+                  })
+              })
+              .catch(error => {
+                  console.log(error)
+              })
+      })
+  } catch (e) {
+      console.error(e)
+  }
   }
   
   return (
@@ -143,11 +192,11 @@ export default function Home() {
                 <Text style={styles.listPassword}>{ visibility[index] ? password.password : "*********"} </Text>
               </View>
               <View style={styles.listIconContainer}>
-                <TouchableOpacity onPress={() => toggleVisibility(index)}>
-                  <FontAwesomeIcon icon={faEye} size={32} color="black" />
-                </TouchableOpacity>
                 <TouchableOpacity onPress={() => copyToClipboard(password.password)}>
                   <FontAwesomeIcon icon={faCopy}  size={32} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => toggleVisibility(index)}>
+                  <FontAwesomeIcon icon={faEye} size={32} color="black" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -169,16 +218,36 @@ export default function Home() {
             </TouchableOpacity>
             <Text>Create a password</Text>
 
-            <Text>Title</Text>
+            <Text>Enter a title for the new password.</Text>
             <TextInput
-              onChangeText={setNewTitle()}
+              style={styles.input}
+              onChangeText={setNewTitle}
             />
+            <TouchableOpacity onPress={() => handleGenerateButton()}>
+              <Text>Generate Strong Password</Text>
+            </TouchableOpacity>
+
+            <View style={styles.newPassView}>
+              <Text>New Password:</Text>
+              <TextInput
+              style={styles.input}
+              onChangeText={setNewPass}
+              value={newPass}
+              />
+            </View>
+
+            <TouchableOpacity onPress={() => createNewPassword()}>
+              <Text>Save</Text>
+            </TouchableOpacity>
 
           </View>
         </Modal>
 
       <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.addButton}>
         <FontAwesomeIcon icon={faAdd}  size={35} color="black" />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => test()} style={styles.addButton}>
+        <FontAwesomeIcon icon={faFish}  size={35} color="black" />
       </TouchableOpacity>
       
     </View>
@@ -240,5 +309,16 @@ const styles = StyleSheet.create({
   closeModal: {
     alignSelf: 'flex-end',
     margin: 15
+  },
+  input: {
+    width: '80%',
+    borderColor: 'black',
+    borderWidth: 2,
+    borderRadius: 15
+  },
+  newPassView: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
