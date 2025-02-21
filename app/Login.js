@@ -25,8 +25,8 @@ export default function Login() {
   }
 
   const test = async () => {
-    printUsers()
-    printPasswords()
+    const id = 4
+    navigation.navigate("Home", {id})
   }
 
   // Handles submit button logic

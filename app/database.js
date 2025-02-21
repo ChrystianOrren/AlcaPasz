@@ -108,6 +108,7 @@ export const insertPassword = async (password, uid, title) => {
 
 export const deletePassword = async (id) => {
     await initalizeDB()
+    console.log("Deleting password where id =", id)
     try{
         const deleteResult = await db.runAsync('DELETE FROM passwords WHERE id = $id', { $id: id })
         console.log(deleteResult)
@@ -153,3 +154,14 @@ export const deletePasswordsTable = async () => {
         console.error("Error deleting passwords table:", error);
     }
 };
+
+export const updateEntry = async (password, title, id) => {
+    await initalizeDB()
+    try {
+        const updateResult = await db.runAsync('UPDATE passwords SET title = ?, password = ? WHERE id = ?', [title, password, id])
+        console.log(updateResult)
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
