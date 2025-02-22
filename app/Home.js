@@ -4,7 +4,7 @@ import { useRoute } from "@react-navigation/native";
 import { useEffect, useState, useCallback } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { CheckBox, Slider } from '@rneui/themed';
-import { TextInput } from "react-native-gesture-handler";
+import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { SwipeListView } from "react-native-swipe-list-view";
 
 // Security
@@ -14,7 +14,8 @@ import CryptoJS from "crypto-js";
 
 // Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faEye, faCopy, faClose, faTrash, faSave, faCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCopy, faClose, faTrash, faSave, faCircle, faSquare } from '@fortawesome/free-solid-svg-icons';
+import { faSquare as faSquareRegular } from '@fortawesome/free-regular-svg-icons';
 
 // Database
 import { getUsersPasswords, insertPassword, deletePassword, updateEntry } from "./database";
@@ -61,6 +62,10 @@ export default function Home() {
   const [symbols, setSymbols] = useState(20);
   const [numbers, setNumbers] = useState(20);
   const [uppercase, setUppercase] = useState(20);
+
+  // Textinput focuses
+  const [isFocusedTitle, setIsFocusedTitle] = useState(false);
+  const [isFocusedNewPass, setIsFocusedNewPass] = useState(false);
 
   // On page open get all users passwords
   useEffect(() => {
@@ -267,28 +272,16 @@ export default function Home() {
   
   return (
     <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      style={styles.container}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#DD6E42" />
-
-      {/* Top Buttons */}
-      <View style={styles.buttonsView}>
-        <TouchableOpacity onPress={() => setShowPasses(!showPasses)}>
-          <FontAwesomeIcon icon={faEye}  size={35} color="black"/>
-        </TouchableOpacity>
-        
-        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.addButton}>
-          {/* <FontAwesomeIcon icon={faAdd}  size={35} color="black"/> */}
-          <Text>New Password</Text>
-        </TouchableOpacity>
-      </View>
+      <StatusBar
+        animated={true}
+        barStyle="dark-content"
+        backgroundColor="#00FF00"
+      />
 
       {/* Main Content */}
-      <View style={{flex: 1, width: '100%'}}>
+      <View style={{flex: 1, width: '100%', marginTop: 20}}>
         <SwipeListView
           data={passwords}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
@@ -300,12 +293,14 @@ export default function Home() {
                   style={styles.itemInput}
                   onChangeText={(text) => handleTextChangeTitle(text, item.id)}
                   value={editedTitles[item.id] || item.title}
+                  color={'#00FF00'}
                 />
                 { showPasses ?
                   <TextInput
                     style={styles.itemInput}
                     onChangeText={(text) => handleTextChangePassword(text, item.id)}
                     value={editedPasswords[item.id] || item.password}
+                    color={'#00FF00'}
                   />
                   :
                   <><Text style={styles.itemInput}>*************</Text></>
@@ -336,6 +331,18 @@ export default function Home() {
         />
       </View>
 
+      {/* Bottom Buttons */}
+      <View style={styles.buttonsView}>
+        <TouchableOpacity onPress={() => setShowPasses(!showPasses)} style={{elevation: 10}}>
+          <FontAwesomeIcon icon={faEye}  size={35} color="#00FF00"/>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.addButton}>
+          {/* <FontAwesomeIcon icon={faAdd}  size={35} color="black"/> */}
+          <Text style={{fontFamily: 'Anonymous Pro Regular', fontSize: 20}}>New Password</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Modal for creating new password */}
       <Modal
           animationType="slide"
@@ -345,61 +352,145 @@ export default function Home() {
             Alert.alert('Modal has been closed.');
             setModalVisible(!modalVisible);
           }}>
-          <View style={styles.modalView}>
-            <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.closeModal}>
-              <FontAwesomeIcon icon={faClose} size={32} color="black" />
-            </TouchableOpacity>
-            <Text>Create a password</Text>
-
-            <Text>Enter a title for the new password.</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={setNewTitle}
-            />
-            <TouchableOpacity onPress={() => handleGenerateButton()}>
-              <Text>Generate Strong Password</Text>
-            </TouchableOpacity>
-
-            <View style={{flexDirection: 'row', paddingHorizontal: 20}}>
-              <View style={{flex: 1}}>
-                <CheckBox value={symbols} checked={symbols} onPress={() => setSymbols(!symbols)} title="Symbols"/>
-                <CheckBox value={numbers} checked={numbers} onPress={() => setNumbers(!numbers)} title="Numbers"/>
-                <CheckBox value={uppercase} checked={uppercase} onPress={() => setUppercase(!uppercase)} title="Uppercase"/>
-              </View>
-              <View style={{justifyContent: 'center', flex: 1.5}}>
-                <Text>Length: {length}</Text>
-                <Slider
-                  value={length}
-                  onValueChange={setLength}
-                  minimumValue={15}
-                  maximumValue={40}
-                  step={1}
-                  allowTouchTrack
-                  trackStyle={{ height: 5, backgroundColor: 'transparent' }}
-                  thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
-                  thumbProps={{
-                    children: (
-                      <FontAwesomeIcon icon={faCircle} size={20} color="black"/>
-                    ),
-                  }}
-                />
-              </View>
+          <ScrollView style={styles.modalView}>
+            
+            <View style={styles.headerContainer}>
+              <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.closeModal}>
+                <FontAwesomeIcon icon={faClose} size={32} color="#00FF00" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>C:\AlcaPasz&gt; Create Password</Text>
             </View>
 
-            <View style={styles.newPassView}>
-              <Text>New Password:</Text>
-              <TextInput
-              style={styles.input}
-              onChangeText={setNewPass}
-              value={newPass}
-              />
+            <View style={styles.inputContainer}> 
+
+              <View style={styles.titleContainer}>
+                <Text style={styles.modalLabel}>C:\NewPassword&gt; Enter Title</Text>
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
+                  <TextInput
+                    style={ isFocusedTitle ? styles.inputActive : styles.inputInactive}
+                    onChangeText={setNewTitle}
+                    selectionColor={'#464645'}
+                    onFocus={() => setIsFocusedTitle(true)}
+                    onBlur={() => setIsFocusedTitle(false)}
+                  />
+                  {isFocusedTitle ? (
+                    <View
+                      style={{
+                        backgroundColor: '#00FF00',
+                        width: '3.5%',
+                        height: 25,
+                      }}
+                    />
+                  ) : null}
+                </View>
+              </View>
+
+              <View style={{borderWidth: 2, borderRadius: 2, borderColor: '#00FF00', }}>
+                <TouchableOpacity onPress={() => handleGenerateButton()} style={styles.saveButton}>
+                  <Text style={styles.saveText}>Generate Strong Password</Text>
+                </TouchableOpacity>
+
+                <View style={styles.generateContainer}>
+                  <View style={{flex: 1}}>
+
+                    <View style={styles.checkBoxView}>
+                      { symbols ? 
+                        <TouchableOpacity onPress={() => setSymbols(!symbols)}>
+                          <FontAwesomeIcon icon={faSquare} color="#00FF00" />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity onPress={() => setSymbols(!symbols)}>
+                          <FontAwesomeIcon icon={faSquareRegular} color="#00FF00" />
+                        </TouchableOpacity>
+                      }
+                        <TouchableOpacity onPress={() => setSymbols(!symbols)}>
+                          <Text style={styles.checkBoxText}>Symobls</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.checkBoxView}>
+                      { numbers ? 
+                        <TouchableOpacity onPress={() => setNumbers(!numbers)}>
+                          <FontAwesomeIcon icon={faSquare} color="#00FF00" />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity onPress={() => setNumbers(!numbers)}>
+                          <FontAwesomeIcon icon={faSquareRegular} color="#00FF00" />
+                        </TouchableOpacity>
+                      }
+                      <TouchableOpacity onPress={() => setNumbers(!numbers)}>
+                        <Text style={styles.checkBoxText}>Numbers</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.checkBoxView}>
+                      { uppercase ? 
+                        <TouchableOpacity onPress={() => setUppercase(!uppercase)}>
+                          <FontAwesomeIcon icon={faSquare} color="#00FF00" />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity onPress={() => setUppercase(!uppercase)}>
+                          <FontAwesomeIcon icon={faSquareRegular} color="#00FF00" />
+                        </TouchableOpacity>
+                      }
+                      <TouchableOpacity onPress={() => setUppercase(!uppercase)}>
+                        <Text style={styles.checkBoxText}>Uppercase</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                  </View>
+                  <View style={{justifyContent: 'center', flex: 1.5}}>
+                    <Text style={styles.checkBoxText}>Length: {length}</Text>
+                    <Slider
+                      value={length}
+                      onValueChange={setLength}
+                      minimumValue={15}
+                      maximumValue={40}
+                      step={1}
+                      allowTouchTrack
+                      minimumTrackTintColor="#00FF00"
+                      maximumTrackTintColor="white"
+                      trackStyle={{ height: 7}}
+                      thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
+                      thumbProps={{
+                        children: (
+                          <FontAwesomeIcon icon={faCircle} size={20} color="#00FF00"/>
+                        ),
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.newPassView}>
+                <Text style={styles.modalLabel}>C:\NewPassword&gt; New Password</Text>
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
+                  <TextInput
+                    style={ isFocusedNewPass ? styles.inputActive : styles.inputInactive}
+                    onChangeText={setNewPass}
+                    value={newPass}
+                    selectionColor={'#464645'}
+                    onFocus={() => setIsFocusedNewPass(true)}
+                    onBlur={() => setIsFocusedNewPass(false)}
+                  />
+                  {isFocusedNewPass ? (
+                    <View
+                      style={{
+                        backgroundColor: '#00FF00',
+                        width: '3.5%',
+                        height: 25,
+                      }}
+                    />
+                  ) : null}
+                </View>
+              </View>
+
+              <TouchableOpacity onPress={() => createNewPassword()} style={styles.saveButton}>
+                <Text style={styles.saveText}>Save</Text>
+              </TouchableOpacity>
             </View>
 
-            <TouchableOpacity onPress={() => createNewPassword()}>
-              <Text>Save</Text>
-            </TouchableOpacity>
-
-          </View>
+          </ScrollView>
       </Modal>
       
       {/* Modal for confirming deletion */}
@@ -431,6 +522,12 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   // List / ScrollView Styles
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: '#3C3C3B'
+  },  
   listContainer: {
     display: 'flex',
     flexDirection: 'row',
@@ -439,10 +536,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 20,
     width: '95%',
-    marginTop: 20,
+    marginTop: 50,
     justifyContent: 'space-between',
     alignItems: 'center',
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   listIconContainer: {
     display: 'flex',
@@ -466,41 +563,63 @@ const styles = StyleSheet.create({
   // Button Styles
   buttonsView: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 20
   },
   addButton: {
     margin: 10,
-    backgroundColor: '#DD6E42',
+    backgroundColor: '#00FF00',
     padding: 12,
-    borderRadius: 20,
-    elevation: 10
+    borderRadius: 2,
+    elevation: 10,
+    fontFamily: 'Anonymous Pro Regular',
   },
 
   // Create New Pass Modal
   modalView: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    alignSelf: 'center',
     zIndex: 2,
     width: '100%',
     height: '100%',
     display: 'flex',
-    backgroundColor: 'white'
+    backgroundColor: '#3C3C3B'
+  },
+  inputContainer: {
+    width: '100%',
+    height: '75%',
+    padding: 20,
+    marginTop: '20%'
+  },
+  headerContainer: {
+    width: '100%'
   },
   closeModal: {
     alignSelf: 'flex-end',
-    margin: 15
+    margin: 15,
+
   },
-  input: {
-    width: '80%',
-    borderColor: 'black',
+  inputActive: {
+    width: 'auto',
+    height: 50,
+    color: '#00FF00',
+    fontFamily: 'Anonymous Pro Regular',
+  },
+  inputInactive: {
+    width: '100%',
+    borderColor: '#00FF00',
     borderWidth: 2,
-    borderRadius: 15
+    borderRadius: 2,
+    marginTop: 10,
+    height: 50,
+    color: '#00FF00',
+    fontFamily: 'Anonymous Pro Regular',
   },
   newPassView: {
     width: '100%',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'flex-start',
+    marginTop: 30,
   },
   itemModalContainer: {
     justifyContent: 'center',
@@ -511,21 +630,56 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 100,
   },
+  modalTitle: {
+    color: '#00FF00',
+    fontFamily: 'Anonymous Pro Regular',
+    fontSize: 24,
+    padding: 20
+  },
+  modalLabel: {
+    color: '#00FF00',
+    fontFamily: 'Anonymous Pro Regular',
+    fontSize: 18,
+    textAlign: 'left'
+  },
+  titleContainer: {
+    paddingBottom: 30
+  },
+  generateContainer: {
+    flexDirection: 'row', 
+    padding: 20,
+  },
+  checkBoxView: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    padding: 5
+  },
+  checkBoxText: {
+    color: '#00FF00',
+    fontFamily: 'Anonymous Pro Regular',
+    fontSize: 16,
+    marginLeft: 10
+  },
 
   // Swipe List View Styles
   firstView: {
     height: 100,
     backgroundColor: 'white',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    paddingHorizontal: 20,
+    padding: 20,
     flexDirection: 'row',
+    backgroundColor: '#3C3C3B',
+    borderWidth: 2,
+    borderColor: '#00FF00',
+    borderRadius: 5,
+    marginVertical: 10
   },
   secondView: {
     height: 100,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 10
   },
   rowStyle: {
     height: 100, // Ensures both firstView and secondView are the same height
@@ -546,11 +700,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20
   },
   saveButton: {
-    paddingLeft: 100,
+    backgroundColor: '#00FF00',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '75%',
+    padding: '10',
+    elevation: 10,
+    marginVertical: 20
+  },
+  saveText: {
+    color: 'black',
+    fontSize: 18,
+    fontFamily: 'Anonymous Pro Bold',
+    fontWeight: 600
   },
   itemInput: {
     fontSize: 20,
     height: 'auto',
+    fontFamily: 'Anonymous Pro Regular',
+    color: '#00FF00'
   },
 
   // Are you sure? Modal
@@ -560,30 +728,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#70706e',
     marginTop: '50%',
     elevation: 20,
-    borderRadius: 20
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: '#00FF00',
+    borderRadius: 2
   },
   sureText: {
-    fontSize: 25
+    fontSize: 25,
+    fontFamily: 'Anonymous Pro Bold',
+    color: '#00FF00'
   },
   yesButton: {
-    backgroundColor: 'lightgreen',
+    backgroundColor: 'red',
     padding: 15,
-    borderRadius: 20,
+    borderRadius: 2,
     width: 75
   },
   noButton: {
-    backgroundColor: 'red',
+    backgroundColor: '#00FF00',
     padding: 15,
-    borderRadius: 20,
+    borderRadius: 2,
     width: 75
   },
   yesNoText: {
     color: 'black',
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 600,
     textAlign: 'center',
+    fontFamily: 'Anonymous Pro Bold',
   }
 });

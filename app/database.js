@@ -138,6 +138,7 @@ export const checkLogin = async (username, password) => {
             return row
           }
         }
+        return null
     }
     catch (error) {
         console.log(error)
