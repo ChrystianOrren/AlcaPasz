@@ -6,11 +6,11 @@ import * as Clipboard from 'expo-clipboard';
 import { CheckBox, Slider } from '@rneui/themed';
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { SwipeListView } from "react-native-swipe-list-view";
+import { AES_KEY} from './env'
 
 // Security
 import 'react-native-get-random-values';
 import CryptoJS from "crypto-js";
-//import { AES_KEY } from '@env';
 
 // Icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -27,9 +27,6 @@ const charBank = {
   numbers: "0123456789",
   symbols: "!@#$%^&*()_+-=[]{}|;:',.<>?"
 }
-
-// Need to move to .env
-const key = "mysecretkey1234567890123456"; // Must be 32 characters for AES-256
 
 export default function Home() {
   // Id from Login
@@ -93,7 +90,7 @@ export default function Home() {
     const passes = await getUsersPasswords(id)
     const decryptedPasses = passes.map(item => ({
       ...item,
-      password: decrypt(item.password, key)
+      password: decrypt(item.password, AES_KEY)
     }));
     console.log(decryptedPasses)
     setPasswords(decryptedPasses)
@@ -102,7 +99,7 @@ export default function Home() {
   // Logic after hitting save on creating a new pass
   const createNewPassword = async () => {
     if (newTitle != "" && newPass != "") {
-      const encryptedPass = encrypt(newPass, key)
+      const encryptedPass = encrypt(newPass, AES_KEY)
       console.log("Saving to DB:", [encryptedPass, id, newTitle])
       const createdPass = await insertPassword(encryptedPass, id, newTitle)
       await getPasswords()
@@ -210,7 +207,7 @@ export default function Home() {
     }
 
     console.log("Updating:", editedTitle, editedPass, id)
-    let encryptedPass = encrypt(editedPass, key)
+    let encryptedPass = encrypt(editedPass, AES_KEY)
     const saveEdit = updateEntry(encryptedPass, editedTitle, id)
     onRefresh()
   };
@@ -288,9 +285,9 @@ export default function Home() {
           keyExtractor={(item) => item.id}
           renderItem={({item}) => (
             <View style={styles.firstView}>
-              <View>
+              <View style={{}}>
                 <TextInput
-                  style={styles.itemInput}
+                  style={styles.itemInputText}
                   onChangeText={(text) => handleTextChangeTitle(text, item.id)}
                   value={editedTitles[item.id] || item.title}
                   color={'#00FF00'}
@@ -703,10 +700,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#00FF00',
     alignItems: 'center',
     alignSelf: 'center',
-    width: '75%',
-    padding: '10',
+    padding: 10,
     elevation: 10,
-    marginVertical: 20
+    marginVertical: 20,
   },
   saveText: {
     color: 'black',
@@ -718,7 +714,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     height: 'auto',
     fontFamily: 'Anonymous Pro Regular',
-    color: '#00FF00'
+    color: '#00FF00',
+    width: 'auto',
+  },
+  itemInputText: {
+    fontSize: 20,
+    height: 'auto',
+    fontFamily: 'Anonymous Pro Regular',
+    color: '#00FF00',
+    width: 200,
   },
 
   // Are you sure? Modal

@@ -5,11 +5,12 @@ export default function Loading() {
     <View
       style={{
         flex: 1,
-        justifyContent: "center",
+        justifyContent: "space-between",
         alignItems: "center",
+        backgroundColor: '#3C3C3B',
       }}
     >
-      <Text>Loading screen.</Text>
+      <Text style={{ color: '#00FF00', fontSize: 25, fontFamily: 'Anonymous Pro Regular' }}>Loading screen.</Text>
     </View>
   );
 }

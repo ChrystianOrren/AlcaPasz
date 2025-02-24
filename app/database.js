@@ -50,9 +50,9 @@ export const checkRegister = async (username) => {
     try{
         const allRows = await db.getAllAsync('SELECT * FROM users');
         for (const row of allRows){
-          if ( username == row.username) {
-            return 0
-          }
+            if ( username == row.username) {
+                return 0
+            }
         }
     }
     catch (error) {
@@ -63,9 +63,10 @@ export const checkRegister = async (username) => {
 
 export const insertUser = async (username, password) => {
     await initalizeDB()
-    let check = await checkRegister()
+    let check = await checkRegister(username)
     try {
         if (check == 1) {
+            console.log(check)
             const insertUser = await db.runAsync('INSERT INTO users (username, password) VALUES (?, ?)', username, password)
             console.log(insertUser)
             return 1
@@ -153,6 +154,16 @@ export const deletePasswordsTable = async () => {
         console.log("Passwords table deleted:", result);
     } catch (error) {
         console.error("Error deleting passwords table:", error);
+    }
+};
+
+export const deleteUsersTable = async () => {
+    await initalizeDB();
+    try {
+        const result = await db.runAsync('DROP TABLE IF EXISTS users;');
+        console.log("Users table deleted:", result);
+    } catch (error) {
+        console.error("Error deleting users table:", error);
     }
 };
 
